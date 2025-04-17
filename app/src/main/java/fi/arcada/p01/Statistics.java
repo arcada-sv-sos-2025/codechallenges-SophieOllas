@@ -9,39 +9,47 @@ import java.util.HashMap;
 public class Statistics {
 
     public static double calcMean(List<DataModel> data) {
+        //Returnerar 0.0 om det inte finns någon data, för att undvika error
         if (data == null || data.isEmpty()) {
             return 0.0;
         }
 
         double sum = 0.0;
-        int count = 0; // Keep track of valid numbers
+        int count = 0;
         for (DataModel item : data) {
             try {
-                double value = Double.parseDouble(item.getValue2()); // Parse value2 as double
+                //konverterar string till double
+                double value = Double.parseDouble(item.getValue2());
+                //räknar ihop alla värden i datalistan
                 sum += value;
+                //samt antalet värden
                 count++;
             } catch (NumberFormatException e) {
-                // Handle the case where the value is not a valid number
-                // You might want to log an error or skip the value
-                System.err.println("Invalid number format: " + item.getValue2());
+                System.err.println("Invalid number: " + item.getValue2());
             }
         }
 
-        return count > 0 ? sum / count : 0.0; // Calculate mean if there are valid numbers
+        //om värdet är större än 0 divideras sum med count
+        return count > 0 ? sum / count : 0.0;
     }
 
     public static double calcMin(List<DataModel> data) {
         if (data == null || data.isEmpty()) {
-            return 0.0; // Or Double.MAX_VALUE if you want to indicate "no minimum" differently
+            return 0.0;
         }
 
-        double min = Double.MAX_VALUE; // Initialize with the largest possible double value
+        //Initializera min som max value för att säkerställa att alla valid
+        //värden är mindre än min
+        double min = Double.MAX_VALUE;
         boolean foundValidNumber = false;
 
+        //Loopa igenom värden tills den minsta hittas
         for (DataModel item : data) {
             try {
                 double value = Double.parseDouble(item.getValue2());
                 if (value < min) {
+                    //min blir alltid ersätt med det mindre värdet tills den
+                    //minsta hittas
                     min = value;
                     foundValidNumber = true;
                 }
@@ -56,10 +64,11 @@ public class Statistics {
 
     public static double calcMax(List<DataModel> data) {
         if (data == null || data.isEmpty()) {
-            return 0.0; // Or Double.MIN_VALUE if you want to indicate "no maximum" differently
+            return 0.0;
         }
 
-        double max = Double.MIN_VALUE; // Initialize with the smallest possible double value
+        //Samma princip som med min
+        double max = Double.MIN_VALUE;
         boolean foundValidNumber = false;
 
         for (DataModel item : data) {
@@ -84,15 +93,14 @@ public class Statistics {
         }
 
         double sum = 0.0;
-        int count = 0; // Keep track of valid numbers
+        int count = 0;
         for (DataModel item : data) {
             try {
                 double value = Double.parseDouble(item.getValue2());
+                //Värden summeras och antalet räknas ut
                 sum += value;
                 count++;
             } catch (NumberFormatException e) {
-                // Handle the case where the value is not a valid number
-                // You might want to log an error or skip the value
                 System.err.println("Invalid number format: " + item.getValue2());
             }
         }
@@ -110,22 +118,20 @@ public class Statistics {
             try {
                 values.add(Double.parseDouble(item.getValue2()));
             } catch (NumberFormatException e) {
-                // Handle invalid number format (e.g., log, skip, or return a special value)
                 System.err.println("Invalid number format: " + item.getValue2());
             }
         }
 
         if (values.isEmpty()) {
-            return 0.0; // Return 0 if no valid numbers were found
+            return 0.0;
         }
 
+        //Sorterar listan av värden i ascending order
         Collections.sort(values);
         int size = values.size();
         if (size % 2 == 0) {
-            // Even number of elements: median is the average of the two middle elements
             return (values.get(size / 2 - 1) + values.get(size / 2)) / 2.0;
         } else {
-            // Odd number of elements: median is the middle element
             return values.get(size / 2);
         }
     }
@@ -133,20 +139,19 @@ public class Statistics {
     public static List<Double> calcMode(List<DataModel> data) {
         List<Double> values = new ArrayList<>();
         if (data == null || data.isEmpty()) {
-            return new ArrayList<>(); // Return an empty list for null or empty input
+            return new ArrayList<>();
         }
 
         for (DataModel item : data) {
             try {
                 values.add(Double.parseDouble(item.getValue2()));
             } catch (NumberFormatException e) {
-                // Handle invalid number format (e.g., log, skip, or return a special value)
                 System.err.println("Invalid number format: " + item.getValue2());
             }
         }
 
         if (values.isEmpty()) {
-            return new ArrayList<>(); // Return an empty list if no valid numbers were found
+            return new ArrayList<>();
         }
 
         Map<Double, Integer> counts = new HashMap<>();
@@ -166,39 +171,37 @@ public class Statistics {
             }
         }
 
-        return modes; // Return a list of modes (can be more than one)
+        return modes;
     }
 
 
     public static double calcStdev(List<DataModel> data) {
         List<Double> values = new ArrayList<>();
         if (data == null || data.size() < 2) {
-            return 0.0; // Standard deviation requires at least 2 data points
+            return 0.0;
         }
 
         for (DataModel item : data) {
             try {
                 values.add(Double.parseDouble(item.getValue2()));
             } catch (NumberFormatException e) {
-                // Handle invalid number format
                 System.err.println("Invalid number format: " + item.getValue2());
             }
         }
 
         if (values.size() < 2) {
-            return 0.0; // Return 0 if less than 2 valid numbers are found
+            return 0.0;
         }
 
-        double average = calcAverageFromValues(values); // Helper method (see below)
+        double average = calcAverageFromValues(values);
         double sumOfSquares = 0;
         for (double value : values) {
             sumOfSquares += Math.pow(value - average, 2);
         }
 
-        return Math.sqrt(sumOfSquares / (values.size() - 1)); // Sample standard deviation
+        return Math.sqrt(sumOfSquares / (values.size() - 1));
     }
 
-    // Helper method to calculate the average from a list of doubles
     private static double calcAverageFromValues(List<Double> values) {
         if (values == null || values.isEmpty()) {
             return 0.0;
@@ -211,17 +214,16 @@ public class Statistics {
     }
 
     public static double calcLQ(List<DataModel> data) {
-        List<Double> values = extractValues(data); // Use helper to extract and handle invalid numbers
-        if (values.size() < 2) return 0.0; // Need at least 2 values to calculate quartiles
+        List<Double> values = extractValues(data);
+        if (values.size() < 2) return 0.0;
 
         Collections.sort(values);
         int lowerSize = values.size() / 2;
         List<Double> lowerHalf = values.subList(0, lowerSize);
 
-        return calcMedianFromValues(lowerHalf); // Use helper for median of doubles
+        return calcMedianFromValues(lowerHalf);
     }
 
-    // Helper method to extract valid double values
     private static List<Double> extractValues(List<DataModel> data) {
         List<Double> values = new ArrayList<>();
         if (data != null) {
@@ -236,12 +238,11 @@ public class Statistics {
         return values;
     }
 
-    // Helper method to calculate median from a list of doubles
     private static double calcMedianFromValues(List<Double> values) {
         if (values == null || values.isEmpty()) {
             return 0.0;
         }
-        Collections.sort(values); // Sort again, as subList is not guaranteed to be sorted
+        Collections.sort(values);
         int size = values.size();
         if (size % 2 == 0) {
             return (values.get(size / 2 - 1) + values.get(size / 2)) / 2.0;
